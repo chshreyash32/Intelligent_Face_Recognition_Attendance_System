@@ -40,7 +40,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(TRAIN_DIR, exist_ok=True)
 
 # -- INIT DATABASE --
-if not os.path.exists(CSV_FILE):
+if not os.path.exists(CSV_FILE) or os.path.getsize(CSV_FILE) == 0:
     pd.DataFrame(columns=["RollNo", "Name", "Subject", "Section", "Held", "Attended", "LastUpdated"]).to_csv(CSV_FILE, index=False)
 
 if not os.path.exists(MAPPING_FILE):
@@ -75,6 +75,19 @@ st.markdown("""
     }
     div[data-baseweb="base-input"] {
         background-color: #111111;
+    }
+
+    /* FIX: Make typed text white in all input fields */
+    div[data-baseweb="base-input"] input,
+    div[data-baseweb="base-input"] textarea,
+    .stTextInput input,
+    .stTextInput textarea,
+    input[type="text"],
+    input[type="password"],
+    input {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        caret-color: #ffffff !important;
     }
     
     /* SELECT BOXES */
@@ -171,13 +184,13 @@ def page_home():
     st.markdown("<h5 style='text-align: center;'>Gokaraju Rangaraju Institute of Engineering and Technology</h5>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Department of CSE(AIML)</p>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    
+
     c1, c2 = st.columns(2)
     with c1:
         st.markdown("### 🎓 Student Portal")
         st.markdown("Login to view attendance or Register")
         if st.button("Continue as Student"): navigate_to("student_hub")
-    
+
     with c2:
         st.markdown("### 👨‍🏫 Faculty Login")
         st.markdown("Mark attendance and view reports")
@@ -188,7 +201,7 @@ def page_student_hub():
     if st.button("← Back"): navigate_to("home")
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<h2>Student Dashboard</h2>", unsafe_allow_html=True)
-    
+
     c1, c2 = st.columns(2)
     with c1:
         st.info("Check your attendance status")
@@ -200,7 +213,7 @@ def page_student_hub():
 # --- STUDENT REGISTER ---
 def page_student_register():
     if st.button("← Back"): navigate_to("student_hub")
-    
+
     if st.session_state.get('reg_step') != 'capture':
         st.markdown("<h3>New Student Registration</h3>", unsafe_allow_html=True)
         with st.container():
@@ -209,28 +222,28 @@ def page_student_register():
                 name = st.text_input("Full Name")
                 roll = st.text_input("Roll Number")
                 section = st.selectbox("Section", SECTION_LIST)
-                
+
                 st.markdown("<br>", unsafe_allow_html=True)
                 if st.button("Next: Capture Face"):
                     if name and roll:
                         st.session_state.update({'reg_name': name, 'reg_roll': roll, 'reg_sec': section, 'reg_step': 'capture'})
                         st.rerun()
                     else: st.error("Please fill all details.")
-            
+
     else:
         st.markdown(f"<h3>Capturing: {st.session_state['reg_name']}</h3>", unsafe_allow_html=True)
-        
+
         c_cam, c_txt = st.columns([2, 1])
         with c_cam: cam_ph = st.image([])
         with c_txt: 
             st.info("Look at the camera. Capturing 30 images...")
             status = st.empty()
-            
+
         cap = cv2.VideoCapture(0)
         detector = cv2.CascadeClassifier(HAAR_FILE)
         final_id = save_mapping(get_next_id(), st.session_state['reg_roll'])
         count = 0
-        
+
         while True:
             ret, frame = cap.read()
             if not ret: break
@@ -241,18 +254,18 @@ def page_student_register():
                 cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 2)
                 count += 1
                 cv2.imwrite(f"{DATA_DIR}/User.{final_id}.{count}.jpg", gray[y:y+h,x:x+w])
-            
+
             cam_ph.image(frame, channels="BGR")
             status.markdown(f"**Progress: {count}/30**")
             if count >= 30: break
-        
+
         cap.release()
         status.success("Processing...")
-        
+
         if train_model():
             df = pd.read_csv(CSV_FILE)
             df = df[df['RollNo'].astype(str) != st.session_state['reg_roll']]
-            
+
             new_rows = []
             for sub in SUBJECT_LIST:
                 new_rows.append({
@@ -262,7 +275,7 @@ def page_student_register():
                 })
             df = pd.concat([df, pd.DataFrame(new_rows)], ignore_index=True)
             df.to_csv(CSV_FILE, index=False)
-            
+
             st.success("Registration Successful!")
             if st.button("Finish"):
                 st.session_state['reg_step'] = None
@@ -272,24 +285,24 @@ def page_student_register():
 def page_student_view():
     if st.button("← Back"): navigate_to("student_hub")
     st.markdown("<h3>Attendance Records</h3>", unsafe_allow_html=True)
-    
+
     roll = st.text_input("Enter Roll Number")
-    
+
     if st.button("Check Attendance"):
         try:
             df = pd.read_csv(CSV_FILE)
             df['RollNo'] = df['RollNo'].astype(str)
             data = df[df['RollNo'] == roll]
-            
+
             if not data.empty:
                 st.markdown(f"#### Student: {data.iloc[0]['Name']} ({roll})")
-                
+
                 table_data = []
                 for _, row in data.iterrows():
                     h = int(row['Held'])
                     a = int(row['Attended'])
                     p = (a/h)*100 if h > 0 else 0
-                    
+
                     table_data.append({
                         "Subject": row['Subject'],
                         "Section": row['Section'],
@@ -298,7 +311,7 @@ def page_student_view():
                         "Percentage": f"{p:.1f}%",
                         "Last Updated": row['LastUpdated']
                     })
-                
+
                 st.dataframe(pd.DataFrame(table_data), use_container_width=True, hide_index=True)
             else:
                 st.error("No records found. Please register first.")
@@ -308,19 +321,19 @@ def page_student_view():
 # --- FACULTY LOGIN ---
 def page_faculty_login():
     if st.button("← Home"): navigate_to("home")
-    
+
     st.markdown("<br><br>", unsafe_allow_html=True)
     c_spacer, c_login, c_spacer2 = st.columns([1, 2, 1])
-    
+
     with c_login:
         st.markdown("### Faculty Login")
         st.markdown("<p style='color:#888; font-size:14px;'>Enter your 4-digit Faculty ID.</p>", unsafe_allow_html=True)
-        
+
         u = st.text_input("Faculty ID")
         p = st.text_input("Password", type="password")
-        
+
         st.markdown("<br>", unsafe_allow_html=True)
-        
+
         if st.button("Login"):
             if len(u) == 4 and u.isdigit() and u == p:
                 navigate_to("faculty_dashboard")
@@ -332,17 +345,17 @@ def page_faculty_dashboard():
     if st.button("← Logout"): navigate_to("home")
     st.markdown("<h2>Faculty Dashboard</h2>", unsafe_allow_html=True)
     st.markdown("#### Setup Attendance Session")
-    
+
     c1, c2 = st.columns(2)
     with c1: sub = st.selectbox("Subject", SUBJECT_LIST)
     with c2: sec = st.selectbox("Section", SECTION_LIST)
-    
+
     c3, c4 = st.columns(2)
     with c3:
         periods = st.selectbox("No. of Periods", [1, 2, 3, 4])
-    
+
     st.markdown("<br>", unsafe_allow_html=True)
-    
+
     if st.button("🚀 Start Live Attendance"):
         st.session_state.update({
             'live_sub': sub, 
@@ -357,16 +370,16 @@ def page_live_attendance():
     c_back, c_title = st.columns([1, 5])
     with c_back: 
         if st.button("← Back"): navigate_to("faculty_dashboard")
-    
+
     sub = st.session_state.get('live_sub')
     sec = st.session_state.get('live_sec')
     periods = st.session_state.get('live_periods')
-    
+
     st.markdown(f"<h3>Live Class: {sub} ({sec})</h3>", unsafe_allow_html=True)
     st.markdown(f"**Adding {periods} Period(s) per student**")
 
     col_cam, col_log = st.columns([2, 1])
-    
+
     with col_cam:
         if not st.session_state['live_run']:
             if st.button("▶ START CAMERA", key="start_btn"):
@@ -379,7 +392,7 @@ def page_live_attendance():
                 st.session_state['live_run'] = False
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
-        
+
         video_ph = st.image([])
 
     with col_log:
@@ -397,52 +410,52 @@ def page_live_attendance():
             cap = cv2.VideoCapture(0)
             logs = []
             last_marked = {}
-            
+
             while st.session_state['live_run']:
                 ret, frame = cap.read()
                 if not ret: break
                 frame = cv2.flip(frame, 1)
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 faces = face_cascade.detectMultiScale(gray, 1.2, 5)
-                
+
                 for (x,y,w,h) in faces:
                     cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 2)
                     id_internal, conf = recognizer.predict(gray[y:y+h,x:x+w])
-                    
+
                     if conf < 65:
                         real_roll = get_roll(id_internal)
                         now = datetime.now()
-                        
+
                         # COOLDOWN 60s
                         if real_roll not in last_marked or (now - last_marked[real_roll]).seconds > 60:
                             try:
                                 df = pd.read_csv(CSV_FILE)
                                 df['RollNo'] = df['RollNo'].astype(str)
                                 mask = (df['RollNo'] == str(real_roll)) & (df['Subject'] == sub)
-                                
+
                                 # Use .empty check
                                 if not df.loc[mask].empty:
                                     idx = df.index[mask].tolist()[0]
-                                    
+
                                     # Update count
                                     df.at[idx, 'Held'] = int(df.at[idx, 'Held']) + periods
                                     df.at[idx, 'Attended'] = int(df.at[idx, 'Attended']) + periods
                                     df.at[idx, 'LastUpdated'] = now.strftime("%H:%M:%S")
                                     df.to_csv(CSV_FILE, index=False)
-                                    
+
                                     last_marked[real_roll] = now
                                     logs.insert(0, f"✅ {real_roll} (+{periods})")
                                 else:
                                     logs.insert(0, f"⚠️ Student {real_roll} not registered for {sub}")
                             except Exception as e:
                                 logs.insert(0, f"❌ Error: {str(e)}")
-                        
+
                         cv2.putText(frame, f"Marked: {real_roll}", (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
                     else:
                         cv2.putText(frame, "Unknown", (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,255), 2)
-                
+
                 video_ph.image(frame, channels="BGR")
-                
+
                 # HTML LOG DISPLAY FOR BETTER VISIBILITY
                 log_html = ""
                 for l in logs[:10]:
