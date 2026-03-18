@@ -1,403 +1,273 @@
-🎓 Intelligent Face Recognition Attendance System
+# 🎓 Intelligent Face Recognition Attendance System
 
-A real-time AI-powered attendance management system that automatically records student attendance using face recognition technology.
-The system provides separate portals for students and faculty, enabling seamless attendance tracking, reporting, and management.
+**An AI-powered, real-time attendance management system using face recognition.**  
+Built as a B.Tech CSE (AIML) academic project — Gokaraju Rangaraju Institute of Engineering and Technology.
 
-This project was developed as part of B.Tech CSE (AIML) academic learning to demonstrate practical implementation of Computer Vision, Machine Learning, and Web Application Development.
+---
 
-🚀 Project Overview
+## 📌 Problem Statement
 
-Traditional attendance systems are time-consuming, error-prone, and easy to manipulate. This system provides an automated, secure, and efficient solution using:
+Traditional attendance systems are:
+- ❌ Time-consuming and manual
+- ❌ Prone to proxy attendance
+- ❌ Hard to track subject-wise records
 
-Face detection and recognition
+This system solves all three by automatically recognizing student faces and marking attendance in real time — with zero manual effort from students.
 
-Live attendance marking
+---
 
-Student registration via face capture
+## 🚀 System Flow
 
-Faculty dashboard for session control
+```
+Student Registers → Captures 30 Face Images → Model Auto-Trains
+                                  ↓
+Faculty Starts Session → Webcam Detects Faces → Attendance Auto-Marked
+                                  ↓
+              CSV Database Updated in Real Time → Student Views Records
+```
 
-Real-time attendance updates
+---
 
-Attendance analytics and reporting
+## ✨ Features
 
-The system captures facial data, trains a recognition model, and marks attendance automatically during live sessions.
+### 👨‍🎓 Student Portal
+| Feature | Description |
+|---|---|
+| Face Registration | Captures 30 images via webcam and auto-trains the model |
+| Attendance View | Enter roll number to view subject-wise records |
+| Percentage Tracking | Calculates attendance % per subject automatically |
 
-✨ Features
-👨‍🎓 Student Portal
+### 👨‍🏫 Faculty Portal
+| Feature | Description |
+|---|---|
+| Secure Login | 4-digit Faculty ID authentication |
+| Session Setup | Select subject, section, and number of periods |
+| Live Attendance | Real-time face recognition with on-screen logs |
+| Multi-Period Support | Marks multiple periods in a single session |
 
-Student registration with face capture (30 images)
+### 🤖 AI Engine
+| Feature | Description |
+|---|---|
+| Face Detection | Haar Cascade Classifier (OpenCV built-in) |
+| Face Recognition | LBPH (Local Binary Pattern Histogram) Algorithm |
+| Confidence Threshold | Accepts match only if confidence score < 65 |
+| Anti-Duplicate | 60-second cooldown per student per session |
+| Unknown Rejection | Unrecognized faces are ignored automatically |
 
-Secure student identity mapping
+---
 
-View personal attendance records
+## 🛠️ Tech Stack
 
-Subject-wise attendance tracking
+| Layer | Technology | Purpose |
+|---|---|---|
+| Language | Python 3.8+ | Core application |
+| Web UI | Streamlit | Interactive dashboard & routing |
+| Computer Vision | OpenCV (`cv2`) | Face detection & recognition |
+| ML Model | LBPH Face Recognizer | Face recognition algorithm |
+| Data Handling | Pandas, NumPy | CSV storage & data processing |
+| Image Processing | PIL (Pillow) | Grayscale image conversion |
+| Storage | CSV + JSON | Attendance DB & ID mapping |
 
-Attendance percentage calculation
+---
 
-👨‍🏫 Faculty Portal
+## 📁 Project Structure
 
-Faculty login authentication
-
-Create live attendance sessions
-
-Select subject and section
-
-Real-time attendance marking
-
-Multiple period support
-
-Live activity logs
-
-🤖 AI & Computer Vision
-
-Face detection using Haar Cascade
-
-Face recognition using LBPH algorithm
-
-Model training from captured dataset
-
-Unknown face detection
-
-Cooldown system to avoid duplicate marking
-
-📊 Attendance Management
-
-CSV-based attendance storage
-
-Student database management
-
-Subject-wise attendance tracking
-
-Automatic attendance updates
-
-Timestamp logging
-
-🎨 User Interface
-
-Streamlit web interface
-
-Premium dark UI design
-
-Real-time camera feed
-
-Interactive dashboards
-
-🛠️ Technology Stack
-Programming Language
-
-Python
-
-Framework
-
-Streamlit (Web Interface)
-
-Libraries
-
-OpenCV — Face detection and recognition
-
-NumPy — Numerical computation
-
-Pandas — Data storage and processing
-
-PIL — Image handling
-
-Concepts Used
-
-Computer Vision
-
-Machine Learning
-
-Face Recognition
-
-Image Processing
-
-Real-Time Systems
-
-🏗️ System Architecture
-Student Registration → Image Capture → Dataset Creation
-                          ↓
-                    Model Training
-                          ↓
-Live Camera Feed → Face Recognition → Attendance Update
-                          ↓
-                    Attendance Database
-
-📁 Project Structure
+```
 project/
 │
-├── dataset/                # Stored face images
-├── trainer/                # Trained model files
-├── attendance.csv          # Attendance database
-├── student_map.json        # Student ID mapping
+├── model/                      # Trained model storage
+├── trainer/                    # LBPH trainer output files
 │
-├── main.py                 # Main application
-├── collect_data.py         # Face data collection
-├── train_model.py          # Model training
-├── attendance_system.py    # Attendance logic
-├── dashboard.py            # UI dashboard
-├── attendance_summary.py   # Attendance reports
+├── app.py                      # Main Streamlit application
+├── collect_data.py             # Face image data collection
+├── train_model.py              # Model training script
+├── attendance_system.py        # Core attendance logic
+├── dashboard.py                # UI dashboard components
+├── attendance_summary.py       # Attendance reports & analytics
 │
-├── requirements.txt        # Dependencies
+├── attendance.csv              # Attendance database (auto-created)
+├── attendance_db.csv           # Attendance backup/extended DB
+├── student_attendance.csv      # Student-specific attendance records
+├── student_map.json            # Internal ID to Roll number mapping
+├── student_embeddings.npz      # Stored face embeddings
+├── labels.npy                  # Label data for recognition model
+│
+├── requirements.txt            # Python dependencies
 └── README.md
+```
 
-🔄 Application Workflow (System Flow)
+> **Note:** `model/`, `trainer/`, CSV files, and `student_map.json` are generated automatically on first run. You do not need to create them manually.
 
-This application follows a structured multi-step workflow implemented using a state-based navigation system in Streamlit.
+---
 
-🏠 1. Home Page
+## ⚙️ Installation & Setup
 
-Entry point of the system.
+### Prerequisites
+- Python 3.8 or above
+- A working webcam
 
-Users choose between:
+### Step 1 — Clone the Repository
+```bash
+git clone https://github.com/yourusername/face-attendance-system.git
+cd face-attendance-system
+```
 
-Student Portal
-
-Faculty Portal
-
-Navigation handled using Streamlit session state routing.
-
-👨‍🎓 2. Student Portal Flow
-➤ Student Dashboard
-
-Access attendance records.
-
-Register new face for first-time users.
-
-➤ Student Registration Process
-
-Enter:
-
-Full Name
-
-Roll Number
-
-Section
-
-System activates webcam.
-
-Captures 30 facial images using OpenCV.
-
-Images stored in dataset folder.
-
-System assigns internal student ID.
-
-Face recognition model is trained automatically.
-
-Student record created in attendance database for all subjects.
-
-Output:
-
-Trained face recognition model
-
-Student mapping stored
-
-Attendance records initialized
-
-➤ Attendance Viewing
-
-Student enters roll number.
-
-System fetches records from CSV database.
-
-Displays:
-
-Subject-wise attendance
-
-Total classes held
-
-Classes attended
-
-Attendance percentage
-
-Last updated time
-
-👨‍🏫 3. Faculty Portal Flow
-➤ Faculty Login
-
-Authentication using 4-digit faculty ID.
-
-Redirects to faculty dashboard on successful login.
-
-➤ Attendance Session Setup
-
-Faculty configures:
-
-Subject selection
-
-Section selection
-
-Number of periods
-
-Start live attendance session
-
-🎥 4. Live Attendance System (Core AI Module)
-
-When faculty starts attendance:
-
-System loads trained face recognition model.
-
-Webcam starts real-time video capture.
-
-Face detection performed using Haar Cascade.
-
-Face recognition using LBPH algorithm.
-
-If match confidence is acceptable:
-
-Student identity retrieved
-
-Attendance marked automatically
-
-Unknown faces are ignored.
-
-Cooldown period prevents duplicate marking.
-
-Real-time features:
-
-Live camera feed
-
-Attendance logs
-
-Student recognition status
-
-Auto update of attendance records
-
-📊 5. Attendance Database Update
-
-When a student is recognized:
-
-Classes held updated
-
-Classes attended updated
-
-Timestamp recorded
-
-Data stored in CSV database
-
-Logs shown on dashboard
-
-🗂️ 6. Data Storage & Model Management
-
-The system maintains:
-
-Dataset Folder → Captured face images
-
-Trainer Folder → Trained model file
-
-Student Mapping → Internal ID ↔ Roll number
-
-Attendance Database → CSV records
-
-🧠 Internal System Logic
-
-The application is built using:
-
-Session-based page routing
-
-Real-time camera processing loop
-
-Model training pipeline
-
-Face-to-ID mapping system
-
-Cooldown-based attendance marking
-
-CSV-based persistent storage
-
-This architecture ensures:
-
-✅ Real-time performance
-✅ Scalable student management
-✅ Accurate attendance tracking
-✅ Secure identity mapping
-
-⚙️ Installation & Setup
-1️⃣ Clone Repository
-git clone https://github.com/yourusername/project.git
-cd project
-
-2️⃣ Install Dependencies
+### Step 2 — Install Dependencies
+```bash
 pip install -r requirements.txt
+```
 
-3️⃣ Run Application
-streamlit run main.py
+**requirements.txt**
+```
+streamlit
+opencv-contrib-python-headless
+numpy
+pandas
+pillow
+streamlit-webrtc
+av
+```
 
-📌 How It Works
-Student Registration
+> ⚠️ `opencv-contrib-python-headless` is used here (no GUI window dependency). `streamlit-webrtc` and `av` enable browser-based webcam streaming.
 
-Enter name and roll number
+### Step 3 — Run the App
+```bash
+streamlit run app.py
+```
 
-Capture 30 face images
+The app opens automatically at `http://localhost:8501`
 
-Train recognition model automatically
+---
 
-Faculty Attendance
+## 🔄 How to Use
 
-Login as faculty
+### For Students
 
-Select subject and section
+**1. Register (First Time Only)**
+- Go to **Student Portal → Register Face**
+- Enter Full Name, Roll Number, and Section
+- Allow webcam access — 30 face images are captured automatically
+- The recognition model trains itself — registration complete ✅
 
-Start live attendance session
+**2. View Attendance**
+- Go to **Student Portal → View Attendance**
+- Enter your Roll Number
+- View subject-wise attendance, total classes held, and percentage
 
-System detects and marks students automatically
+### For Faculty
 
-Attendance Storage
+**1. Login**
+- Go to **Faculty Login**
+- Enter a 4-digit numeric Faculty ID (password = same as ID in demo)
 
-Stored in CSV database
+**2. Take Attendance**
+- Select Subject, Section, and Number of Periods
+- Click **Start Live Attendance**
+- The webcam starts — recognized students are marked automatically
+- Real-time logs appear on screen
+- Click **Stop** when the session ends
 
-Updated in real-time
+---
 
-Subject-wise tracking
+## 🧠 How the AI Works
 
-🔐 Authentication
+```
+Webcam Frame
+    ↓
+Haar Cascade Classifier → Detects face region (bounding box)
+    ↓
+Crop + Convert to Grayscale → Preprocessed face patch
+    ↓
+LBPH Recognizer → Predicts student ID + confidence score
+    ↓
+Confidence < 65 → Valid match → Fetch roll number from student_map.json
+    ↓
+60-second cooldown check → Mark attendance in CSV
+```
 
-Faculty login requires:
+**LBPH (Local Binary Pattern Histogram)** works by analyzing local texture patterns in face images. It is lightweight, fast, and works well under varying lighting — making it ideal for real-time classroom use.
 
-4-digit faculty ID
+---
 
-Password same as ID (demo implementation)
+## 📊 Data Storage
 
-📊 Future Improvements
+### `attendance.csv`
+| RollNo | Name | Subject | Section | Held | Attended | LastUpdated |
+|---|---|---|---|---|---|---|
+| 21A91A0501 | Shreyash | Machine Learning | Section A | 10 | 9 | 14:35:22 |
 
-Deep learning based face recognition (FaceNet / MTCNN)
+### `student_map.json`
+```json
+{
+  "1": "21A91A0501",
+  "2": "21A91A0502"
+}
+```
+Maps internal OpenCV integer IDs to actual student roll numbers.
 
-Cloud database integration
+---
 
-Mobile deployment
+## ⚡ Configuration
 
-Multi-user authentication
+Key parameters you can customize in `app.py`:
 
-Anti-spoofing detection
+```python
+# Add or remove subjects
+SUBJECT_LIST = ["Machine Learning", "Big Data Analytics", "Software Engineering", ...]
 
-Performance optimization
+# Add or remove sections
+SECTION_LIST = ["Section A", "Section B", "Section C"]
 
-Attendance analytics dashboard
+# Recognition strictness — lower value = stricter matching
+if conf < 65:   # Adjust confidence threshold here
 
-🎯 Learning Outcomes
+# Anti-duplicate cooldown in seconds
+if (now - last_marked[real_roll]).seconds > 60:
+```
 
-Through this project, I gained practical experience in:
+---
 
-Building real-time computer vision systems
+## 🔐 Authentication
 
-Machine learning model training
+Faculty login requires a 4-digit numeric ID. In this demo build, the password matches the ID.
 
-Web app development with Streamlit
+> ⚠️ **Demo only.** For production use, replace with a proper authentication system using hashed passwords and a database-backed login.
 
-Image processing pipelines
+---
 
-Data management using Pandas
+## 🚀 Future Improvements
 
-End-to-end system design
+- [ ] Deep learning face recognition (FaceNet / MTCNN) for higher accuracy
+- [ ] Cloud database (Firebase / PostgreSQL) instead of local CSV
+- [ ] Anti-spoofing — detect photo-based attacks
+- [ ] Low attendance email/SMS alerts
+- [ ] Admin panel for managing students and faculty
+- [ ] Export attendance reports as PDF or Excel
+- [ ] Mobile-friendly deployment (Streamlit Cloud / Docker)
 
-👨‍💻 Author
+---
 
-Shreyash Chintalwar
-B.Tech CSE (Artificial Intelligence & Machine Learning)
+## 🎯 Skills Demonstrated
 
-Computer Vision Enthusiast
+| Skill | How It Appears in This Project |
+|---|---|
+| Computer Vision | Real-time face detection and recognition pipeline using OpenCV |
+| Machine Learning | LBPH model training, inference, and confidence-based filtering |
+| Web Development | Full Streamlit app with multi-page session-state routing |
+| Data Engineering | CSV/JSON-based persistent storage managed with Pandas |
+| Software Design | Modular page architecture, clean separation of logic and UI |
+| UI/UX Design | Custom dark theme via injected CSS inside Streamlit |
 
-AI & ML Learner
+---
 
-Software Developer
+## 👨‍💻 Author
+
+**Shreyash Chintalwar**  
+B.Tech CSE(AIML)
+Gokaraju Rangaraju Institute of Engineering and Technology
+
+
+---
+
+> *Built to explore real-world applications of AI, Computer Vision, and Web Development.*  
+> *Open to feedback, contributions, and collaboration.*
